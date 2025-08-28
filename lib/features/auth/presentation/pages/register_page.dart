@@ -1,8 +1,10 @@
 import 'package:blog_app/core/theme/app_pallete.dart';
 import 'package:blog_app/core/widgets/custom_text_field.dart';
 import 'package:blog_app/core/widgets/gradient_button.dart';
+import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -53,7 +55,20 @@ class _RegisterPageState extends State<RegisterPage> {
                 isObscureText: true,
               ),
               const SizedBox(height: 20),
-              GradientButton(buttonText: "Sign Up", onTap: () {}),
+              GradientButton(
+                buttonText: "Sign Up",
+                onTap: () {
+                  if (formKey.currentState!.validate()) {
+                    context.read<AuthBloc>().add(
+                      AuthRegister(
+                        name: nameController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                      ),
+                    );
+                  }
+                },
+              ),
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
