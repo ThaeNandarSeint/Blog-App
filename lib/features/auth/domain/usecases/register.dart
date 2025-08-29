@@ -1,14 +1,15 @@
 import 'package:blog_app/core/error/app_failure.dart';
 import 'package:blog_app/core/interfaces/usecase.dart';
+import 'package:blog_app/features/auth/domain/entities/user.dart';
 import 'package:blog_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class Register implements Usecase<String, RegisterParams> {
+class Register implements Usecase<User, RegisterParams> {
   final AuthRepository authRepository;
   const Register(this.authRepository);
 
   @override
-  Future<Either<AppFailure, String>> call(RegisterParams params) async {
+  Future<Either<AppFailure, User>> call(RegisterParams params) async {
     return await authRepository.register(
       name: params.name,
       email: params.email,
