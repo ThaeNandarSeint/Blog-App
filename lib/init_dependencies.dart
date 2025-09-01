@@ -1,6 +1,8 @@
+import 'package:blog_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:blog_app/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:blog_app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:blog_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:blog_app/features/auth/domain/usecases/get_current_user.dart';
 import 'package:blog_app/features/auth/domain/usecases/login.dart';
 import 'package:blog_app/features/auth/domain/usecases/register.dart';
 import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
@@ -17,6 +19,9 @@ Future<void> initDependencies() async {
     anonKey: dotenv.env['SUPABASE_API_KEY'] ?? '',
   );
   serviceLocator.registerLazySingleton(() => supabase.client);
+
+  // core
+  serviceLocator.registerLazySingleton(() => AppUserCubit());
 }
 
 void _initAuth() {
@@ -32,8 +37,14 @@ void _initAuth() {
     // Usecases
     ..registerFactory(() => Register(serviceLocator()))
     ..registerFactory(() => Login(serviceLocator()))
+    ..registerFactory(() => GetCurrentUser(serviceLocator()))
     // Bloc
     ..registerLazySingleton(
-      () => AuthBloc(register: serviceLocator(), login: serviceLocator()),
+      () => AuthBloc(
+        register: serviceLocator(),
+        login: serviceLocator(),
+        getCurrentUser: serviceLocator(),
+        appUserCubit: serviceLocator(),
+      ),
     );
 }
