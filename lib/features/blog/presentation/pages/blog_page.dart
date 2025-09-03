@@ -23,6 +23,12 @@ class _BlogPageState extends State<BlogPage> {
     context.read<BlogBloc>().add(BlogGetAllBlogs());
   }
 
+  final colors = [
+    AppPallete.gradient1,
+    AppPallete.gradient2,
+    AppPallete.gradient3,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +58,7 @@ class _BlogPageState extends State<BlogPage> {
               itemCount: state.blogs.length,
               itemBuilder: (ctx, index) {
                 final blog = state.blogs[index];
-                return BlogCard(blog: blog, color: AppPallete.gradient1);
+                return BlogCard(blog: blog, color: colors[index % 3]);
               },
             );
           }
