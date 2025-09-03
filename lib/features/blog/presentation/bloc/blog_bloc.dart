@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:blog_app/features/blog/domain/entities/blog.dart';
+import 'package:blog_app/features/blog/domain/usecases/get_all_blogs.dart';
 import 'package:blog_app/features/blog/domain/usecases/upload_blog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,14 +10,20 @@ part 'blog_event.dart';
 part 'blog_state.dart';
 
 class BlogBloc extends Bloc<BlogEvent, BlogState> {
-  final UploadBlog uploadBlog;
-  BlogBloc(this.uploadBlog) : super(BlogInitial()) {
+  final UploadBlog _uploadBlog;
+  final GetAllBlogs _getAllBlogs;
+
+  BlogBloc({required UploadBlog uploadBlog, required GetAllBlogs getAllBlogs})
+    : _uploadBlog = uploadBlog,
+      _getAllBlogs = getAllBlogs,
+      super(BlogInitial()) {
     on<BlogEvent>((event, emit) => emit(BlogLoading()));
     on<BlogUpload>(_onBlogUpload);
+    on<BlogGetAllBlogs>(_onGetAllBlogs);
   }
 
   void _onBlogUpload(BlogUpload event, Emitter<BlogState> emit) async {
-    final res = await uploadBlog(
+    final res = await _uploadBlog(
       UploadBlogParams(
         postedId: event.postedId,
         title: event.title,
@@ -26,7 +34,15 @@ class BlogBloc extends Bloc<BlogEvent, BlogState> {
     );
     res.fold(
       (error) => emit(BlogFailure(error.message)),
-      (result) => emit(BlogSuccess()),
+      (result) => emit(BlogUploadSuccess()),
+    );
+  }
+
+  void _onGetAllBlogs(BlogGetAllBlogs event, Emitter<BlogState> emit) async {
+    final res = await _getAllBlogs(GetAllBlogsParams());
+    res.fold(
+      (error) => emit(BlogFailure(error.message)),
+      (result) => emit(BlogsDisplaySuccess(result)),
     );
   }
 }
