@@ -1,14 +1,17 @@
 import 'package:blog_app/core/error/app_failure.dart';
 import 'package:blog_app/core/error/server_exception.dart';
+import 'package:blog_app/core/network/connection_checker.dart';
 import 'package:blog_app/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:blog_app/core/common/entities/user.dart';
+import 'package:blog_app/features/auth/data/models/user_model.dart';
 import 'package:blog_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
-  const AuthRepositoryImpl(this.remoteDataSource);
+  final ConnectionChecker connectionChecker;
+  const AuthRepositoryImpl(this.remoteDataSource, this.connectionChecker);
 
   @override
   Future<Either<AppFailure, User>> login({
@@ -38,6 +41,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<Either<AppFailure, User>> _getUser(Future<User> Function() fn) async {
     try {
+      if (!await (connectionChecker.isConnected)) {
+        return left(AppFailure(message: 'No Internet Connection'));
+      }
       final user = await fn();
       return right(user);
     } on sb.AuthException catch (e) {
@@ -50,6 +56,19 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<AppFailure, User>> getCurrentUser() async {
     try {
+      if (!await (connectionChecker.isConnected)) {
+        final session = remoteDataSource.currentUserSession;
+        if (session == null) {
+          return left(AppFailure(message: 'User not logged in!'));
+        }
+        return right(
+          UserModel(
+            id: session.user.id,
+            name: '',
+            email: session.user.email ?? '',
+          ),
+        );
+      }
       final user = await remoteDataSource.getCurrentUserData();
       if (user == null) {
         return left(AppFailure(message: 'User not logged in'));
